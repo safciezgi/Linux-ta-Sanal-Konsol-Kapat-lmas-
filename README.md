@@ -1,33 +1,44 @@
-# SSH PORTU NASIL DEĞİŞTİRİLİR
-İlk olarak değişiklik yapmak istediğiniz sunucu ile SSH bağlantısı kurun. Bunu sağlamak için,  
- 
-```
-ssh root@{host}
-```
-komutu ile aşağıdaki örnekteki gibi bağlantı sağladığınızdan emin olun:    
+# Ubuntu'da Sanal Konsollar Nasıl Kapatılır?
+Sanal Konsollar (TTY'lar) arası geçişleri (Ctrl+Alt+F1…F6) Ubuntu'da nasıl kapatacağımızı araştırmalarım sonucunda karşılaştığım cevaplar üzerinden sizlere Türkçe kaynak olarak anlatacağım.  
 
-![Screenshot from 2021-10-18 15-02-31](https://user-images.githubusercontent.com/51738775/137726580-5421edcf-90f4-466b-b295-f08edcdfbbd4.png)
+## İlk Yöntem:
+--------
 
-Gerekli düzenlemeleri yapmamız için konfigürasyon dosyasına erişmemiz gerekecek. Bunun için terminalde, 
-
-```
-nano /etc/ssh/sshd_config
+```cmd
+sudo tee -a /etc/init/tty{1..6}.override <<<"manual"
 ```
 
-komutunu girmemiz gerek. Aşağıdaki gibi bir dosya açılacak. Bu kısımda **#Port** yazısını aşağıda görseldeki gibi bulduğunuzdan emin olun:  
+## İkinci Yöntem:
+--------
+[/etc/X11/xorg.conf](https://manpages.ubuntu.com/manpages/impish/en/man5/xorg.conf.5.html) dosyasını aşağıdaki komut ile açıp oluşturuyoruz.
 
-![port22](https://user-images.githubusercontent.com/51738775/137727324-5d42f75d-fc24-4c72-a8ce-462d7487de05.png)  
-
-**#Port 22** kısmını değiştirmek istediğimiz port ile (ben 2222 yazdım)örnekteki gibi düzenliyoruz:
-
+```cmd
+sudo -i gedit /etc/X11/xorg.conf
 ```
-Port 2222
+Ve aşağıdaki satırları dosyanın içine ekliyoruz:
+
+```cmd
+Section "ServerFlags"
+    Option "DontVTSwitch" "true"
+EndSection
 ```
 
-Burada dikkat etmemiz gereken kısım başındaki **#** sembolünün kalktığından emin olun. İşlem bitince kaydedip çıkın.
+## Üçüncü Yöntem:
+--------
+Aşağıdaki komutları sırası ile uygulayarak Root kullanıcısı olarak aşağıda belirtilen ilgili dizini açıyoruz:
 
-Son olarak şağıdaki komut ile portu aktifleştirin:
+```cmd
+sudo su
 
+nano /etc/default/console-setup
 ```
-sudo service ssh restart
-```# Linux-ta-Sanal-Konsol-Kapat-lmas-
+![tty_ss1](https://user-images.githubusercontent.com/51738775/137868005-960f7114-f8a1-450a-a8f9-2f8ae609dd86.png)
+
+>ACTIVE_CONSOLES="/dev/tty[1-6]" 
+
+kısmını bulduğunuzdan emin olun ve seçeneğinize göre değiştirin.  
+
+Diyelim ki ilk 2'si kalsın istiyorsunuz o zaman ilgili kısmı şu şekilde düzenleyelirisiniz: 
+>ACTIVE_CONSOLES="/dev/tty[1-2]"
+
+Son olarak ilgili tty conf dosyalarını bulun(Bu kısım işletim sisteminizin sürümüne göre farklılık gösterecektir.) ve kapattığınız ekranlarla ilgili satırları yorum satırı yaptığınızdan emin olun.
